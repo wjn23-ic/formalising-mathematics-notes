@@ -60,7 +60,9 @@ theorem MyGroup₁.mul_left_cancel {G : Type*} (hG : MyGroup₁ G)
   rw [← hG.one_mul b, ← hG.inv_mul_cancel a,
     ← hG.one_mul c, ← hG.inv_mul_cancel a,
     hG.mul_assoc, hG.mul_assoc, h]
-
+/- may need to rewatch everything from 40 to 55
+or not. its 45 now. i kinda slipped away for a bit.
+-/
 /-
 But in practice, a given object will only ever have one group structure defined
 on it. Ideally, Lean would be able to recall the group structure automatically.

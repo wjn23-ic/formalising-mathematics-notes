@@ -114,6 +114,7 @@ the undetermined variables by directly plugging them in to `add_comm`.
 -/
 
 example (a b c : ℕ) : a + b + c = b + a + c := by
+  -- rw [add_comm] doesn't work due to the tree search
   rw [add_comm a b]
 
 /-
@@ -206,36 +207,90 @@ theorem zero_add (a : MyNat) : zero + a = a := by
     rw [add_succ, h]
 
 theorem succ_add (a b : MyNat) : succ a + b = succ (a + b) := by
-  sorry
+  induction b with
+  | zero =>
+    rw [add_zero]
+    rw [add_zero a]
+  | succ n h =>
+    rw [add_succ, h, add_succ]
+
 
 theorem add_comm (a b : MyNat) : a + b = b + a := by
-  sorry
+  induction a with
+  | zero =>
+    rw [add_zero, zero_add]
+  | succ n h =>
+    rw[succ_add, add_succ, h]
 
 theorem add_assoc (a b c : MyNat) : a + b + c = a + (b + c) := by
-  sorry
-
+  induction a with
+  | zero =>
+    rw [zero_add, zero_add]
+  | succ n h =>
+    rw [succ_add, succ_add, succ_add, h]
 theorem zero_mul (a : MyNat) : zero * a = zero := by
-  sorry
-
+  induction a with
+  | zero =>
+    rw [mul_zero]
+  | succ n h =>
+    rw [mul_succ, h, zero_add]
 theorem succ_mul (a b : MyNat) : succ a * b = a * b + b := by
-  sorry
-
+  induction b with
+  | zero =>
+    rw [mul_zero, add_zero, mul_zero]
+  | succ n h => /- I'll think of a nicer way slowly...-/
+    rw [mul_succ, mul_succ, h, add_assoc, add_assoc]
+    rw [add_succ, add_succ a n, add_comm a n]
 theorem mul_comm (a b : MyNat) : a * b = b * a := by
-  sorry
-
+  induction a with
+  | zero =>
+    rw[mul_zero, zero_mul]
+  | succ n h =>
+    rw [succ_mul, mul_succ, h]
 theorem mul_add (a b c : MyNat) : a * (b + c) = a * b + a * c := by
-  sorry
+  induction a with
+  | zero =>
+    rw [zero_mul, zero_mul, zero_mul, zero_add]
+  | succ n h =>
+    rw [succ_mul, succ_mul, succ_mul, h, add_assoc, add_assoc]
+    rw [add_comm (n*c) c]
+    rw [← add_assoc b c (n*c)] /- I'm surprised this not in notes backslashl-/
+    rw [add_comm (b+c) (n*c)]
+
+/- helper -/
+theorem abc_to_acb (a b c : MyNat) : a + b + c = a + c + b := by
+  rw [add_assoc, add_assoc, add_comm b c]
 
 theorem add_mul (a b c : MyNat) : (a + b) * c = a * c + b * c := by
-  sorry
+  induction c with
+  | zero =>
+    rw [mul_zero, mul_zero, mul_zero, zero_add]
+    /- how do you do this mult times again? rewrite multi?-/
+  | succ n h =>
+    rw [mul_succ, mul_succ, mul_succ, h]
+    rw [add_assoc, add_assoc]
+    rw [add_comm (b*n) b]
+    rw [← add_assoc a b (b*n)]
+    rw [add_comm (b*n) (a+b)]
 
 theorem mul_assoc (a b c : MyNat) : a * b * c = a * (b * c) := by
-  sorry
+  induction a with
+  | zero =>
+    repeat rw [zero_mul]
+  | succ n h =>
+    rw[succ_mul, succ_mul]
+    rw[<- h, add_mul]
 
 theorem mul_one (a : MyNat) : a * succ zero = a := by
-  sorry
-
+  induction a with
+  | zero =>
+    rw[zero_mul]
+  | succ n h =>
+    rw[mul_succ, mul_zero, zero_add]
 theorem one_mul (a : MyNat) : succ zero * a = a := by
-  sorry
-
+  induction a with
+  | zero =>
+    rw[mul_zero]
+  | succ n h =>
+    rw[succ_mul, zero_mul, zero_add]
 end MyNat

@@ -70,7 +70,7 @@ example : myFun = myFun2 1 := by
 /-
 Two more things to know are the identity function `id : α → α` and
 function composition `f ∘ g`. They satisfy the definitional equalities
-`id a = a` and `(g ∘ f) a = g (f a)`.
+`id a = a` and `(g ∘ f) a = g (f a)`. get using backslash circ
 -/
 
 example : α → α := id
@@ -84,6 +84,13 @@ example (f : α → β) (g : β → γ) (a : α) : (g ∘ f) a = g (f a) := by
   rfl
 
 /-
+  You can basically think of sets as being functions
+-/
+example : (Set α) = (α -> Prop):= by
+  rfl
+
+
+/-
 Given a type `α`, the type of all subsets of `α` is denoted by `Set α`.
 Given a set `s : Set α` and a term `a : α`, the expression `a ∈ s` denotes
 the proposition stating that `a` is an element of `s`. The notation for
@@ -95,6 +102,7 @@ writing down a specific set is `{a : α | P a}`.
 example : Set ℕ := {n | 1 < n ∧ ¬ ∃ p q, 1 < p ∧ 1 < q ∧ n = p * q}
 
 /-
+" The way you work with them is that you just remember what they actually mean"
 There is lots of new notation for sets, but we will not need to learn any new
 tactics as long as we can remember the following definitional equalities:
 `s ⊆ t` is definitionally equal to `∀ a, a ∈ s → a ∈ t`.
@@ -104,11 +112,20 @@ tactics as long as we can remember the following definitional equalities:
 `a ∈ Set.univ` is definitionally equal to `True`.
 `a ∈ sᶜ` is definitionally equal to `a ∉ s` (notation for `¬ a ∈ s`).
 `b ∈ f '' s` is definitionally equal to `∃ a : α, a ∈ s ∧ f a = b`.
-`a ∈ f⁻¹' s` is definitionally equal to `f a ∈ s`.
+`a ∈ f⁻¹' s` is definitionally equal to `f a ∈ s`. sometimes written f⁻¹(s)
 
 To prove that two sets `s t : Set α` are equal, the tactic `ext a` will add an
 arbitrary `a : α` as an assumption and replace the goal with `a ∈ s ↔ a ∈ t`.
 -/
+example (s : Set α) (b : β) (f : α → β) (h : b ∈ f '' s) : False := by
+  /- there's a tactic called change that lets you pull apart def equalities-/
+  change ∃ a ∈ s, f a = b at h
+  change ∃ a : α , a ∈ s ∧ f a = b at h -- has a secret and
+  rcases h with ⟨ h1, h2⟩
+  rcases h2 with ⟨ h2, h3⟩
+  -- actually a nested rcases in ⟨h1, h2, h3⟩
+  sorry
+
 
 example (s t : Set α) : s ∩ t ⊆ s ∪ t := by
   intro a ha
@@ -139,6 +156,7 @@ the triangle inequality `|a + b| ≤ |a| + |b|` is called `abs_add_le`.
 -/
 
 #check abs_add_le
+#check abs_add_eq_add_abs_iff
 
 /-
 Tactics: Mathlib has a few tactics which help locate existing theorems.
@@ -197,19 +215,40 @@ section
 variable (s t u v : Set α)
 
 example : s ⊆ s := by
-  sorry
+  -- intro a ha
+  -- exact ha
+  exact Set.Subset.refl s
 
 example : s ⊆ t → t ⊆ u → s ⊆ u := by
-  sorry
+  intro ssubt tsubu a ha
+  exact Set.mem_of_subset_of_mem tsubu (ssubt ha)
+  -- change ∀ a, a ∈ s → a ∈ t at ssubt
+  -- change ∀ a, a ∈ t → a ∈ u at tsubu
+  -- specialize ssubt a
+  -- specialize tsubu a
+  -- apply tsubu
+  -- apply ssubt
+  -- exact ha
 
 example : s ⊆ s ∪ t := by
-  sorry
+  exact Set.subset_union_of_subset_left (fun ⦃a⦄ a_1 ↦ a_1) t
+  -- intro a ha
+  -- left
+  -- exact ha
 
 example : s ∩ t ⊆ s := by
-  sorry
+  exact Set.inter_subset_left
+  -- intro a hsandt
+  -- rcases hsandt with ⟨hs,ht⟩
+  -- exact hs
 
 example : s ⊆ t → s ⊆ u → s ⊆ t ∩ u := by
-  sorry
+  intro sint sinu a hs
+  specialize sint hs
+  specialize sinu hs
+  constructor -- or exact ⟨sint, sinu⟩
+  · exact sint
+  · exact sinu
 
 example : t ⊆ s → u ⊆ s → t ∪ u ⊆ s := by
   sorry

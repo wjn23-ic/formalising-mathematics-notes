@@ -234,14 +234,45 @@ learned so far (`exact`, `intro`, `apply`, `specialize`, `have`, `suffices`,
 `left`, `right`, `constructor`, `rcases`, `by_contra`, `by_cases`, `use`).
 -/
 
+/-
+  Why do I get the same thing from by_contra hP and intro hP?
+-/
 example (α : Type*) (P : α → Prop) (h : ∀ a : α, ¬ P a) : ¬ ∃ a : α, P a := by
-  sorry
+  by_contra hP
+  rcases hP with ⟨a, ha⟩
+  specialize h a
+  exact h ha /- huh didn't know I can do this -/
 
+/- library lemma: not_forall : (¬ ∀ x, p x) ↔ ∃ x, ¬ p x -/
 example (α : Type*) (P : α → Prop) (h : ¬ ∀ a : α, P a) : ∃ a : α, ¬ P a := by
-  sorry
+  /- h -> False -/
+  by_contra hNP
+  apply h
+  intro a
+  by_contra hP
+  apply hNP
+  use a
+  /- tbh, I'm not fully sure what I did here, I just puzzled it out w infoview-/
+  /-
+  1. intuition - want to get rid of negation to use for all tactics
+  2. so used by_contra apply to remove negation
+  3. used for_all tactic intro
+  4. now want to remove negation in hNP to use there exist tactics
+  5. repeat by_contra apply step
+  -/
 
+/-
+  tactics: backward (change goal) - intro / use
+  forward - specialize h a / rcases <a, ha>
+-/
 example (α : Type*) (P : α → Prop) (h : ∃ a : α, ¬ P a) : ¬ ∀ a : α, P a := by
-  sorry
+  intro hFA /- or by_contra hFA-/
+  rcases h with ⟨a, ha⟩
+  specialize hFA a
+  exact ha hFA
 
 example (α : Type*) (P : α → Prop) (h : ¬ ∃ a : α, P a) : ∀ a : α, ¬ P a := by
-  sorry
+  intro a
+  by_contra hP
+  apply h /- gives me ∃ a : α, P a as goal-/
+  use a

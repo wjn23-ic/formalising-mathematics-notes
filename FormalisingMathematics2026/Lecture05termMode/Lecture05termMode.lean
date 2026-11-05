@@ -142,19 +142,22 @@ Use refine to produce term-mode proofs of the following propositions.
 variable (P Q R : Prop)
 
 example : P → (P → Q) → Q :=
-  sorry
+  fun hP hPQ ↦ hPQ hP
+
 
 example : (P → Q) → (Q → R) → P → R :=
-  sorry
+  fun hPQ hQR hP ↦ hQR (hPQ hP)
 
 example : (P → Q → R) → (P → Q) → P → R :=
-  sorry
+  fun hPQR hPQ hP ↦ hPQR hP (hPQ hP)
 
 example : (P → Q) → ((P → Q) → P) → Q :=
-  sorry
+  fun hPQ hPQP ↦ hPQ (hPQP hPQ)
 
 example : ((P → Q) → R) → ((Q → R) → P) → ((R → P) → Q) → P :=
-  sorry
+  fun hPQR hQRP hRPQ ↦ hQRP
+    (fun _ ↦ hPQR (fun hP ↦ hRPQ (fun _ ↦ hP)))
+
 
 example : ((Q → P) → P) → (Q → R) → (R → P) → P :=
   sorry

@@ -93,11 +93,17 @@ theorem Surjective.comp (hg : Surjective g) (hf : Surjective f) :
 
 theorem Bijective.comp (hg : Bijective g) (hf : Bijective f) :
     Bijective (g ∘ f) := by
-  rcases hf with ⟨hf_inj, hf_surj⟩
-  rcases hg with ⟨hg_inj, hg_surj⟩
+  -- rcases hf with ⟨hf_inj, hf_surj⟩
+  -- rcases hg with ⟨hg_inj, hg_surj⟩
   constructor
-  · exact hg_inj.comp hf_inj
-  · exact hg_surj.comp hf_surj
+  · -- exact hg_inj.comp hf_inj
+    exact hg.left.comp hf.left
+  · -- exact hg_surj.comp hf_surj
+    exact hg.right.comp hf.right
+    -- we can use dot notation instead of rcases
+
+#check not_not.mp -- a way to get a direction for iff statements
+#check not_not.mpr
 
 /-
 Notice that we could write `hg_inj.comp hf_inj` and `hg_surj.comp hf_surj`
@@ -121,14 +127,35 @@ theorem Surjective.of_comp (hgf : Surjective (g ∘ f)) : Surjective g := by
 Here are two more examples of basic API lemmas as examples for you to try.
 -/
 
+/-
+  injective comp gf and surjective f implies injective g
+  injective ∀ a b : α, f a = f b → a = b
+  surjective  ∀ b : β, ∃ a : α, f a = b
+
+-/
+theorem sound_function (f : α -> β) (a b : α) (h: a = b) : f a = f b := by
+  rw [h]
+
 theorem Injective.of_comp_right (hgf : Injective (g ∘ f)) (hf : Surjective f) :
     Injective g := by
-  sorry
+  intro b1 b2 hgab
+  rcases hf b1 with ⟨a1, ha1⟩
+  rcases hf b2 with ⟨a2, ha2⟩
+  rw [←ha1, ←ha2]
+  specialize hgf a1 a2
+  apply sound_function
+  apply hgf
+  change g (f a1) = g (f a2)
+  rw [ha1, ha2]
+  exact hgab
 
 theorem Surjective.of_comp_left (hgf : Surjective (g ∘ f)) (hg : Injective g) :
     Surjective f := by
-  sorry
-
+  intro b
+  rcases hgf (g b) with ⟨a, ha⟩
+  use a
+  apply hg
+  exact ha
 /-
 A predicate `Bijective` on functions `f : α → β` is one possible way
 to translate the mathematical notion of bijective functions into Lean.
